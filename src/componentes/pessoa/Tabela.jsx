@@ -1,94 +1,90 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { useContext } from 'react'
+import PessoaContext from './PessoaContext';
 import Alerta from '../Alerta';
 import MaterialTable from 'material-table'
 import { Icon } from '@material-ui/core';
-import config from '../../Config';
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
+import PhoneIcon from '@material-ui/icons/Phone';
 
-class Tabela extends Component {
+function Tabela() {
 
-    state = {
-        listaObjetos: []
-    };
+  const { setObjeto, alerta, setAlerta, listaObjetos,
+    setEditar, recuperar, remover, setShowForm, setShowTabela, setShowTabelaTelefone, recuperarTelefones } = useContext(PessoaContext);
 
-    formataData = (data) => {
-        var arrNascimento = data.split('-');
-        var nascimentoFormatado = arrNascimento[2] + '/' + arrNascimento[1] + '/' + arrNascimento[0];
-        return nascimentoFormatado;
-    }
+  return (
+    <div style={{ padding: '20px' }}>
 
-    async getListaObjetos() {
-        await fetch(config.enderecoapi+'/api/pessoas')
-            .then(response => response.json())
-            .then(listaObjetos => this.setState({ listaObjetos }))
-            .catch(err => console.log(err))
-    }
+      <Alerta alerta={alerta} />
+      <button type="button" className="btn btn-primary"
+        onClick={() => {
+          setObjeto({
+            codigo: 0, nome: "", nascimento: "", salario: "", cidade_codigo: ""
+          });
+          setEditar(false);
+          setAlerta({ status: "", mensagem: "" });
+          setShowForm(true);
+          setShowTabela(false);          
+        }}>
+        Novo <i className="bi bi-file-earmark-plus"></i>
+      </button>
+      <MaterialTable
+        title="CRUD de Pessoas"
+        columns={[
+          { title: 'Código', field: 'codigo', type: 'numeric' },
+          { title: 'Nome', field: 'nome' },
+          { title: 'Nascimento', field: 'nascimento', type: 'date' },
+          { title: 'Salário', field: 'salario', type: 'currency' },
+          { title: 'Cidade', field: 'cidade' },
+        ]}
+        data={listaObjetos}
+        options={{
+          filtering: true
+        }}
+        actions={[
+          rowData => ({
+            icon: () => <div
+              onClick={() => {
+                recuperar(rowData.codigo);
+                setEditar(true);
+                setAlerta({ status: "", mensagem: "" });
+                setShowForm(true);
+                setShowTabela(false);
+              }}>
+              <EditIcon>Editar</EditIcon>
+            </div>,
+            tooltip: 'Editar '
+          }),
+          rowData => ({
+            icon: () => <div
+              onClick={() => {
+                recuperar(rowData.codigo);
+                recuperarTelefones(rowData.codigo);
+                setEditar(true);
+                setAlerta({ status: "", mensagem: "" });
+                setShowForm(false);
+                setShowTabela(false);
+                setShowTabelaTelefone(true);
+              }}>
+              <PhoneIcon>Telefones</PhoneIcon>
+            </div>,
+            tooltip: 'Telefones '
+          }),
+          rowData => ({
+            icon: () => <div
+              onClick={() => {
+                remover(rowData);
+              }}>
+              <DeleteIcon>Remover</DeleteIcon>
+            </div>,
+            tooltip: 'Remover '
+          })          
+        ]}
+      />
 
-    remover = async objeto => {
-        if (window.confirm("Remover este objeto?")) {
-            try {
-                await fetch(
-                    `${config.enderecoapi}/api/pessoas/${objeto.codigo}`,
-                    {
-                        method: "DELETE",
-                    }
-                ).then(response => response.json())
-                    .then(json => {
-                        //console.log("JSON retorno: " + "status: " + json.status  + " Message: " + json.message)          
-                        this.props.atualizaAlerta(json.status, json.message);
-                    })
-                this.getListaObjetos();
-            } catch (err) {
-                console.error(err.message);
-            }
-        }
-    }
 
-    componentDidMount() {
-        this.getListaObjetos();        
-    }
-
-    render() {
-        return (
-            <div>
-                <Alerta alerta={this.props.alerta} />
-                <Link className="btn btn-primary" to="/cadastrarpessoa">
-                Novo  <i className="bi bi-file-earmark-plus"></i>
-            </Link>
-
-                <MaterialTable
-                    title="CRUD de Pessoas"
-                    columns={[
-                        { title: 'Código', field: 'codigo', type: 'numeric' },
-                        { title: 'Nome', field: 'nome' },
-                        { title: 'Nascimento', field: 'nascimento', type: 'date' },
-                        { title: 'Salário', field: 'salario', type: 'currency' },
-                        { title: 'Cidade', field: 'cidade' },
-                    ]}
-                    data={this.state.listaObjetos}
-                    options={{
-                        filtering: true
-                    }}
-                    actions={[
-                        rowData => ({
-                            icon: () => <Link to={`/editarpessoa/${rowData.codigo}`}><Icon>edit</Icon></Link>,
-                            tooltip: 'Editar '
-                        }),
-                        {
-                            icon: 'delete',
-                            tooltip: 'Apagar',
-                            onClick: (event, rowData) => this.remover(rowData)
-                        },
-                        rowData => ({
-                            icon: () => <Link to={`/pessoa/editartelefones/${rowData.codigo}`}><Icon>phone</Icon></Link>,
-                            tooltip: 'Editar Telefones '
-                        })                        
-                    ]}
-                />
-            </div>
-
-        );
-    }
+    </div>
+  )
 }
 
 export default Tabela;

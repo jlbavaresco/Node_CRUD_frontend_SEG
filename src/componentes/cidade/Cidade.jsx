@@ -1,51 +1,132 @@
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'jquery/dist/jquery.min.js'
-import 'font-awesome/css/font-awesome.min.css'
-import Tabela from "./Tabela";
-import Cadastrar from "./Cadastrar";
-import { Component } from 'react';
-import { BrowserRouter as Router, Switch, Route} from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import config from '../../Config';
+import CidadeContext from './CidadeContext';
+import Tabela from './Tabela';
+import Form from './Form';
 
-class Estado extends Component {
+function Cidade() {
 
-  state = {
-    alerta: { status: "", mensagem: "" }
+  const [alerta, setAlerta] = useState({ status: "", mensagem: "" });
+  const [listaObjetos, setListaObjetos] = useState([]);
+  const [listaEstados, setListaEstados] = useState([]);
+  const [editar, setEditar] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [objeto, setObjeto] = useState({
+    codigo: "", nome: "", estado_codigo: ""
+  })
+
+  const recuperaEstados = async () => {
+    await fetch(`${config.enderecoapi}/api/estados`)
+      .then(response => response.json())
+      .then(data => setListaEstados(data))
+      .catch(err => console.log('Erro: ' + err))
+  }
+
+  const recuperaCidades = async () => {
+    await fetch(`${config.enderecoapi}/api/cidades`)
+      .then(response => response.json())
+      .then(data => setListaObjetos(data))
+      .catch(err => console.log('Erro: ' + err))
+  }
+
+  const remover = async objeto => {
+    if (window.confirm('Deseja remover este objeto?')) {
+      try {
+        await fetch(`${config.enderecoapi}/api/cidades/${objeto.codigo}`,
+          { method: "DELETE" })
+          .then(response => response.json())
+          .then(json => setAlerta({ status: json.status, mensagem: json.message }))
+        recuperaCidades();
+      } catch (err) {
+        console.log('Erro: ' + err)
+      }
+    }
+  }
+
+  const recuperar = async codigo => {
+    await fetch(`${config.enderecoapi}/api/cidades/${codigo}`)
+      .then(response => response.json())
+      .then(data => setObjeto(data[0]))
+      .catch(err => console.log(err))
+  }
+
+  const acaoCadastrar = async e => {
+
+    e.preventDefault();
+    if (editar) {
+      try {
+        const body = {
+          codigo: objeto.codigo,
+          nome: objeto.nome,
+          estado: objeto.estado_codigo
+        };
+        await fetch(config.enderecoapi + '/api/cidades', {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }).then(response => response.json())
+          .then(json => {
+            //console.log("JSON retorno: " + "status: " + json.status + " Message: " + json.message)                    
+            setAlerta({ status: json.status, mensagem: json.message })
+          });
+      } catch (err) {
+        console.error(err.message);
+      }
+    } else {
+      try {
+        const body = {
+          nome: objeto.nome,
+          estado: objeto.estado_codigo
+        };
+        await fetch(config.enderecoapi + '/api/cidades', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }).then(response => response.json())
+          .then(json => {
+            //console.log("JSON retorno: " + "status: " + json.status + " Message: " + json.message)                    
+            setAlerta({ status: json.status, mensagem: json.message })
+          });
+      } catch (err) {
+        console.error(err.message);
+      }
+    }
+    recuperaCidades();
+    setShowForm(false);
   };
 
-  // função para atualizar o alerta, que recebe o retorno da API
-  atualizaAlerta = (pstatus, pmensagem) => {
-    this.setState({ alerta: { status: pstatus, mensagem: pmensagem } })
-  }  
-
-  componentDidMount() {
-
+  const handleChange = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    setObjeto({ ...objeto, [name]: value });
   }
 
-  render() {
-    return (
-      <div>
-        <Router>
+  useEffect(() => {
+    recuperaEstados();
+    recuperaCidades();
+  }, []);
 
-          <Switch>            
-            <Route exact path="/cidade" render={() => <Tabela
-              alerta={this.state.alerta}
-              atualizaAlerta={this.atualizaAlerta} />} />           
-            <Route exact path="/cadastrarcidade" render={() => <Cadastrar editar={false}
-              objeto={{ codigo: 0, nome: "", estado_codigo: 0 }}
-              atualizaAlerta={this.atualizaAlerta} />} />
-            <Route exact path="/editarcidade/:codigo"
-              render={props => {
-                return (
-                  <Cadastrar editar={true}
-                    objeto={{ codigo: props.match.params.codigo, nome: "", estado_codigo: 0 }}
-                    atualizaAlerta={this.atualizaAlerta} />
-                )
-              }} />
-          </Switch>
-        </Router>
-      </div>
-    );
-  }
+  return (
+    <CidadeContext.Provider value={
+      {
+        objeto, setObjeto,
+        alerta, setAlerta,
+        listaObjetos, setListaObjetos,
+        listaEstados, setListaEstados,
+        editar, setEditar,
+        recuperaEstados,
+        recuperar,
+        remover,
+        acaoCadastrar,
+        handleChange,
+        showForm, setShowForm
+      }
+    }>
+      {!showForm && <Tabela />}
+      {showForm && <Form />}
+
+    </CidadeContext.Provider>
+  );
 }
 
-export default Estado;
+export default Cidade;

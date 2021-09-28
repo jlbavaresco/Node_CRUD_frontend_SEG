@@ -1,83 +1,72 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { useContext } from 'react'
+import EstadoContext from './EstadoContext';
 import Alerta from '../Alerta';
 import MaterialTable from 'material-table'
 import { Icon } from '@material-ui/core';
-import config from '../../Config';
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
 
-class Tabela extends Component {
+function Tabela() {
 
-  state = {
-    listaObjetos: []
-  };
+  const { setObjeto, alerta, setAlerta, listaObjetos,
+    setEditar, recuperar, remover, setShowForm } = useContext(EstadoContext);
 
-  async getListaObjetos() {
-    await fetch(config.enderecoapi+'/api/estados')
-      .then(response => response.json())
-      .then(listaObjetos => this.setState({ listaObjetos }))
-      .catch(err => console.log(err))
-  }
+  return (
+    <div style={{ padding: '20px' }}>
 
-  remover = async objeto => {
-    //  var atualizaAlerta = this.props.atualizaAlerta;
-    if (window.confirm("Remover este objeto?")) {
-      try {
-        await fetch(
-          `${config.enderecoapi}/api/estados/${objeto.codigo}`,
-          {
-            method: "DELETE",
-          }
-        ).then(response => response.json())
-          .then(json => {
-            //console.log("JSON retorno: " + "status: " + json.status  + " Message: " + json.message)          
-            this.props.atualizaAlerta(json.status, json.message);
+      <Alerta alerta={alerta} />
+      <button type="button" className="btn btn-primary"
+        onClick={() => {
+          setObjeto({
+            codigo: 0,
+            nome: "",
+            uf: ""
+          });
+          setEditar(false);
+          setAlerta({ status: "", mensagem: "" });
+          setShowForm(true);
+        }}>
+        Novo <i className="bi bi-file-earmark-plus"></i>
+      </button>
+      <MaterialTable
+        title="CRUD de Estados"
+        columns={[
+          { title: 'Código', field: 'codigo', type: 'numeric' },
+          { title: 'Nome', field: 'nome' },
+          { title: 'UF', field: 'uf' }
+        ]}
+        data={listaObjetos}
+        options={{
+          filtering: true
+        }}
+        actions={[
+          rowData => ({
+            icon: () => <div
+              onClick={() => {
+                recuperar(rowData.codigo);
+                setEditar(true);
+                setAlerta({ status: "", mensagem: "" });
+                setShowForm(true);
+              }}>
+              <EditIcon>Editar</EditIcon>
+            </div>,
+            tooltip: 'Editar '
+          }),
+          rowData => ({
+            icon: () => <div
+              onClick={() => {
+                remover(rowData);
+              }}>
+              <DeleteIcon>Remover</DeleteIcon>
+            </div>,
+            tooltip: 'Remover '
           })
-        this.getListaObjetos();
-      } catch (err) {
-        console.error(err.message);
-      }
-    }
-  }
+        ]}
+      />
 
-  componentDidMount() {
-    this.getListaObjetos();
-  }
 
-  render() {
-    return (
-      <div>
-        <Alerta alerta={this.props.alerta} />
-        <Link className="btn btn-primary" to="/cadastrarestado">
-          Novo  <i className="bi bi-file-earmark-plus"></i>
-        </Link>
-
-        <MaterialTable
-          title="CRUD de Estados"
-          columns={[
-            { title: 'Código', field: 'codigo', type: 'numeric' },
-            { title: 'Nome', field: 'nome' },
-            { title: 'UF', field: 'uf' }
-          ]}
-          data={this.state.listaObjetos}
-          options={{
-            filtering: true
-          }}
-          actions={[
-            rowData => ({
-              icon: () => <Link to={`/editarestado/${rowData.codigo}`}><Icon>edit</Icon></Link>,
-              tooltip: 'Editar '
-            }),
-            {
-              icon: 'delete',
-              tooltip: 'Apagar',
-              onClick: (event, rowData) => this.remover(rowData)
-            },
-          ]}
-        />
-      </div>
-
-    );
-  }
+    </div>
+  )
 }
 
 export default Tabela;
