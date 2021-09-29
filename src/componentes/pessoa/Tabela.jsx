@@ -59,10 +59,8 @@ function Tabela() {
             icon: () => <div
               onClick={() => {
                 recuperar(rowData.codigo);
-                recuperarTelefones(rowData.codigo);
-                setEditar(true);
+                recuperarTelefones(rowData.codigo);                
                 setAlerta({ status: "", mensagem: "" });
-                setShowForm(false);
                 setShowTabela(false);
                 setShowTabelaTelefone(true);
               }}>

@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react';
 import PessoaContext from './PessoaContext';
 import Alerta from '../Alerta';
 import MaterialTable from 'material-table'
@@ -9,9 +9,11 @@ import PhoneIcon from '@material-ui/icons/Phone'
 
 function TabelaTelefones() {
 
-  const { objeto, setObjeto, alerta, setAlerta,setEditar, recuperar,
-     remover, setShowForm, setShowTabela , telefones, setShowTabelaTelefone,
-     removerTelefone, setShowFormTelefone, setTelefone, recuperarTelefone, setEditarTelefone} = useContext(PessoaContext);
+  const { objeto,  alerta, setAlerta, setShowForm, setShowTabela, telefones, 
+    setShowTabelaTelefone,removerTelefone, setShowFormTelefone, 
+    setTelefone, recuperarTelefone, setEditarTelefone, setTelefones
+    } = useContext(PessoaContext);
+
 
   return (
     <div style={{ padding: '20px' }}>
@@ -26,21 +28,22 @@ function TabelaTelefones() {
           setEditarTelefone(false);
           setAlerta({ status: "", mensagem: "" });
           setShowFormTelefone(true);
-          setShowTabelaTelefone(false);          
+          setShowTabelaTelefone(false);
         }}>
         Novo <i className="bi bi-file-earmark-plus"></i>
       </button>
       <button type="button" className="btn btn-info"
         onClick={() => {
-          setShowForm(false);
-          setShowTabela(true);   
           setShowTabelaTelefone(false);
+          setShowTabela(true);
+          setShowForm(false);
           setAlerta({ status: "", mensagem: "" });
+          setTelefones([]);
         }}>
         Voltar para a listagem <i className="bi bi-arrow-left"></i>
       </button>
 
-   
+
       <MaterialTable
         title={`Telefones do ${objeto.nome} - Código ${objeto.codigo}`}
         columns={[

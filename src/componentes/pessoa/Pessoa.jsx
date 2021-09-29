@@ -135,6 +135,7 @@ function Pessoa() {
             setAlerta({ status: json.status, mensagem: json.message });
           })
         // window.location = `/editartelefones/${this.state.objeto.codigo}`;
+        setTelefones([]);
         recuperarTelefones(objeto.codigo);
       } catch (err) {
         console.error(err.message);
@@ -144,6 +145,7 @@ function Pessoa() {
 
   const recuperarTelefones = async codigo => {
     // aqui eu recupero um unico objeto passando o id
+    setTelefones([]);
     await fetch(`${config.enderecoapi}/api/telefones/${codigo}`)
       .then(response => response.json())
       .then(data => setTelefones(data))
@@ -192,10 +194,13 @@ function Pessoa() {
       } catch (err) {
         console.error(err.message);
       }
-    }
+    }    
+    setTelefones([]);
+    recuperarTelefones(objeto.codigo);
     setShowTabelaTelefone(true);
     setShowFormTelefone(false);
-    recuperarTelefones(objeto.codigo);
+    
+    
   };
 
   const recuperarTelefone = async codigo => {
