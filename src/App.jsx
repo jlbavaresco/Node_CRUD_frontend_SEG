@@ -8,11 +8,11 @@ import Menu from "./componentes/Menu";
 import Estado from "./componentes/estado/Estado";
 import Cidade from "./componentes/cidade/Cidade";
 import Pessoa from "./componentes/pessoa/Pessoa";
-import { Component } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import 'primereact/resources/themes/saga-blue/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
+import Login from './componentes/login/Login'
 
 function App() {
   return (
@@ -22,6 +22,7 @@ function App() {
         <Route exact path="/estado" render={() => <Estado />} />
         <Route exact path="/cidade" render={() => <Cidade />} />
         <Route exact path="/pessoa" render={() => <Pessoa />} />
+        <Route exact path="/login" render={() => <Login />} />
       </Switch>
     </Router>
   );

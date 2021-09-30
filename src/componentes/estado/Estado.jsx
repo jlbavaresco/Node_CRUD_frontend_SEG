@@ -14,8 +14,16 @@ function Estado() {
     codigo: "", nome: "", uf: ""
   })
 
+  const autenticacao = JSON.parse(localStorage.getItem('NODECRUDSEG/autenticacao'));
+
   const recuperaEstados = async () => {
-    await fetch(`${config.enderecoapi}/api/estados`)
+    await await fetch(config.enderecoapi + '/api/estados', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": autenticacao.token
+      }
+    })
       .then(response => response.json())
       .then(data => setListaObjetos(data))
       .catch(err => console.log('Erro: ' + err))
@@ -25,7 +33,13 @@ function Estado() {
     if (window.confirm('Deseja remover este objeto?')) {
       try {
         await fetch(`${config.enderecoapi}/api/estados/${objeto.codigo}`,
-          { method: "DELETE" })
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "x-access-token": autenticacao.token
+            }
+          })
           .then(response => response.json())
           .then(json => setAlerta({ status: json.status, mensagem: json.message }))
         recuperaEstados();
@@ -36,10 +50,17 @@ function Estado() {
   }
 
   const recuperar = async codigo => {
-    await fetch(`${config.enderecoapi}/api/estados/${codigo}`)
-      .then(response => response.json())
-      .then(data => setObjeto(data[0]))
-      .catch(err => console.log(err))
+    await
+      fetch(`${config.enderecoapi}/api/estados/${codigo}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": autenticacao.token
+        }
+      })
+        .then(response => response.json())
+        .then(data => setObjeto(data[0]))
+        .catch(err => console.log(err))
   }
 
   const acaoCadastrar = async e => {
@@ -54,7 +75,8 @@ function Estado() {
         };
         await fetch(config.enderecoapi + '/api/estados', {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json" ,
+          "x-access-token": autenticacao.token},
           body: JSON.stringify(body),
         }).then(response => response.json())
           .then(json => {
@@ -72,7 +94,8 @@ function Estado() {
         };
         await fetch(config.enderecoapi + '/api/estados', {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json",
+          "x-access-token": autenticacao.token },
           body: JSON.stringify(body),
         }).then(response => response.json())
           .then(json => {
