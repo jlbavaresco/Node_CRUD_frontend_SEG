@@ -3,6 +3,10 @@ import config from '../../Config';
 import Alerta from '../Alerta';
 import './signin.css';
 //import './estilologin.css';
+import jwt_decode from "jwt-decode";
+
+import pegaAutenticacao from '../Autenticacao';
+import { logout, gravaAutenticacao } from '../Autenticacao';
 
 function Login() {
 
@@ -29,16 +33,18 @@ function Login() {
                         //console.log("JSON retorno: " + "status: " + json.status + " Message: " + json.message)                    
                         setAlerta({ status: "success", mensagem: JSON.stringify(json) })
                         if (json.auth === true){
-                            localStorage.setItem('NODECRUDSEG/autenticacao',JSON.stringify(json));
+                           // localStorage.setItem('NODECRUDSEG/autenticacao',JSON.stringify(json));
+                           gravaAutenticacao(json);
                         }
                     });
             } catch (err) {
                 console.error(err.message);
             }
 
-            const autenticacao = JSON.parse(localStorage.getItem('NODECRUDSEG/autenticacao'));
+            const autenticacao = pegaAutenticacao();
             console.log(autenticacao);
             console.log("token: "+ autenticacao.token);
+            console.log("decoded: " + JSON.stringify(jwt_decode(autenticacao.token)));
         
      
     };

@@ -3,6 +3,7 @@ import config from '../../Config';
 import EstadoContext from './EstadoContext';
 import Tabela from './Tabela';
 import Form from './Form';
+import pegaAutenticacao from '../Autenticacao';
 
 function Estado() {
 
@@ -14,10 +15,10 @@ function Estado() {
     codigo: "", nome: "", uf: ""
   })
 
-  const autenticacao = JSON.parse(localStorage.getItem('NODECRUDSEG/autenticacao'));
+  const autenticacao = pegaAutenticacao();
 
   const recuperaEstados = async () => {
-    await await fetch(config.enderecoapi + '/api/estados', {
+    await fetch(config.enderecoapi + '/api/estados', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
