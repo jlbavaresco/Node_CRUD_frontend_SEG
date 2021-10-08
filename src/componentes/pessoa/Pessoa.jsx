@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import config from '../../Config';
 import PessoaContext from './PessoaContext';
 import Tabela from './Tabela';
 import Form from './Form';
 import TabelaTelefones from './TabelaTelefones';
 import FormTelefone from './FormTelefone';
+import AutenticacaoContext from '../AutenticacaoContext';
 
 function Pessoa() {
 
@@ -27,17 +28,30 @@ function Pessoa() {
     pessoa: ""
   })
   const [editarTelefone, setEditarTelefone] = useState(false);
-
+  const { pegaAutenticacao } = useContext(AutenticacaoContext);
+  const autenticacao = pegaAutenticacao();
 
   const recuperaPessoas = async () => {
-    await fetch(`${config.enderecoapi}/api/pessoas`)
+    await fetch(config.enderecoapi + '/api/pessoas', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": autenticacao.token
+      }
+    })
       .then(response => response.json())
       .then(data => setListaObjetos(data))
       .catch(err => console.log('Erro: ' + err))
   }
 
   const recuperaCidades = async () => {
-    await fetch(`${config.enderecoapi}/api/cidades`)
+    await fetch(config.enderecoapi + '/api/cidades', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": autenticacao.token
+      }
+    })
       .then(response => response.json())
       .then(data => setListaCidades(data))
       .catch(err => console.log('Erro: ' + err))
@@ -47,10 +61,16 @@ function Pessoa() {
     if (window.confirm('Deseja remover este objeto?')) {
       try {
         await fetch(`${config.enderecoapi}/api/pessoas/${objeto.codigo}`,
-          { method: "DELETE" })
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "x-access-token": autenticacao.token
+            }
+          })
           .then(response => response.json())
           .then(json => setAlerta({ status: json.status, mensagem: json.message }))
-        recuperaCidades();
+        recuperaPessoas();
       } catch (err) {
         console.log('Erro: ' + err)
       }
@@ -58,7 +78,13 @@ function Pessoa() {
   }
 
   const recuperar = async codigo => {
-    await fetch(`${config.enderecoapi}/api/pessoas/${codigo}`)
+    await fetch(`${config.enderecoapi}/api/pessoas/${codigo}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": autenticacao.token
+      }
+    })
       .then(response => response.json())
       .then(data => setObjeto(data[0]))
       .catch(err => console.log(err))
@@ -78,7 +104,10 @@ function Pessoa() {
         };
         await fetch(config.enderecoapi + '/api/pessoas', {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-access-token": autenticacao.token
+          },
           body: JSON.stringify(body),
         }).then(response => response.json())
           .then(json => {
@@ -98,7 +127,10 @@ function Pessoa() {
         };
         await fetch(config.enderecoapi + '/api/pessoas', {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-access-token": autenticacao.token
+          },
           body: JSON.stringify(body),
         }).then(response => response.json())
           .then(json => {
@@ -128,6 +160,10 @@ function Pessoa() {
           `${config.enderecoapi}/api/telefones/${telefone.codigo}`,
           {
             method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "x-access-token": autenticacao.token
+            }
           }
         ).then(response => response.json())
           .then(json => {
@@ -146,7 +182,13 @@ function Pessoa() {
   const recuperarTelefones = async codigo => {
     // aqui eu recupero um unico objeto passando o id
     setTelefones([]);
-    await fetch(`${config.enderecoapi}/api/telefones/${codigo}`)
+    await fetch(`${config.enderecoapi}/api/telefones/${codigo}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": autenticacao.token
+      }
+    })
       .then(response => response.json())
       .then(data => setTelefones(data))
       .catch(err => console.log(err))
@@ -165,7 +207,10 @@ function Pessoa() {
         };
         const response = await fetch(config.enderecoapi + '/api/telefones', {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-access-token": autenticacao.token
+          },
           body: JSON.stringify(body),
         }).then(response => response.json())
           .then(json => {
@@ -184,7 +229,10 @@ function Pessoa() {
         };
         const response = await fetch(config.enderecoapi + '/api/telefones', {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-access-token": autenticacao.token
+          },
           body: JSON.stringify(body),
         }).then(response => response.json())
           .then(json => {
@@ -194,18 +242,24 @@ function Pessoa() {
       } catch (err) {
         console.error(err.message);
       }
-    }    
+    }
     setTelefones([]);
     recuperarTelefones(objeto.codigo);
     setShowTabelaTelefone(true);
     setShowFormTelefone(false);
-    
-    
+
+
   };
 
   const recuperarTelefone = async codigo => {
     // aqui eu recupero um unico objeto passando o id
-    await fetch(`${config.enderecoapi}/api/telefone/${codigo}`)
+    await fetch(`${config.enderecoapi}/api/telefone/${codigo}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": autenticacao.token
+      }
+    })
       .then(response => response.json())
       .then(data => setTelefone(data[0]))
       .catch(err => console.log(err))
@@ -217,7 +271,7 @@ function Pessoa() {
     const name = e.target.name;
     const value = e.target.value;
     setTelefone({ ...telefone, [name]: value });
-  }  
+  }
 
   useEffect(() => {
     recuperaPessoas();
@@ -243,8 +297,8 @@ function Pessoa() {
         showTabela, setShowTabela,
         showFormTelefone, setShowFormTelefone,
         showTabelaTelefone, setShowTabelaTelefone,
-        removerTelefone, recuperarTelefones, 
-        telefone, setTelefone, 
+        removerTelefone, recuperarTelefones,
+        telefone, setTelefone,
         acaoCadastrarTelefone, recuperarTelefone,
         editarTelefone, setEditarTelefone, handleChangeTelefone
       }

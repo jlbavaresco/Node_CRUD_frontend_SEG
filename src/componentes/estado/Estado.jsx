@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import config from '../../Config';
 import EstadoContext from './EstadoContext';
 import Tabela from './Tabela';
 import Form from './Form';
-import pegaAutenticacao from '../Autenticacao';
+
+import AutenticacaoContext from '../AutenticacaoContext';
 
 function Estado() {
 
@@ -15,6 +16,7 @@ function Estado() {
     codigo: "", nome: "", uf: ""
   })
 
+  const { pegaAutenticacao} = useContext(AutenticacaoContext);   
   const autenticacao = pegaAutenticacao();
 
   const recuperaEstados = async () => {
@@ -117,7 +119,7 @@ function Estado() {
     setObjeto({ ...objeto, [name]: value });
   }
 
-  useEffect(() => {
+  useEffect(() => { 
     recuperaEstados();
   }, []);
 

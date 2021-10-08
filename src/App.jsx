@@ -13,19 +13,24 @@ import 'primereact/resources/themes/saga-blue/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
 import Login from './componentes/login/Login'
-import PrivateRoute  from './componentes/PrivateRoute';
+import PrivateRoute from './componentes/PrivateRoute';
+import Home from "./componentes/Home"
+import { AuthProvider } from './componentes/AutenticacaoContext'
 
 function App() {
   return (
-    <Router>
-      <Menu />
-      <Switch>
-        <PrivateRoute exact path="/estado" component={Estado} />
-        <PrivateRoute exact path="/cidade" component={Cidade}/>
-        <PrivateRoute exact path="/pessoa" component={Pessoa}/>
-        <Route exact path="/login" render={() => <Login />} />
-      </Switch>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Menu />
+        <Switch>
+          <Route exact path="/" render={Home} />
+          <PrivateRoute exact path="/estado" component={Estado} />
+          <PrivateRoute exact path="/cidade" component={Cidade} />
+          <PrivateRoute exact path="/pessoa" component={Pessoa} />
+          <Route exact path="/login" render={() => <Login />} />
+        </Switch>
+      </Router>
+    </AuthProvider>
   );
 }
 

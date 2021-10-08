@@ -1,53 +1,75 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { Redirect } from 'react-router-dom';
 import config from '../../Config';
 import Alerta from '../Alerta';
 import './signin.css';
 //import './estilologin.css';
 import jwt_decode from "jwt-decode";
+import AutenticacaoContext from '../AutenticacaoContext';
 
-import pegaAutenticacao from '../Autenticacao';
-import { logout, gravaAutenticacao } from '../Autenticacao';
 
 function Login() {
 
+    const {pegaAutenticacao, logout, 
+        gravaAutenticacao, autenticacao, setAutenticacao} = useContext(AutenticacaoContext);
+        
     const [nomeusuario, setNomeusuario] = useState("");
     const [senha, setSenha] = useState("");
     const [alerta, setAlerta] = useState({ status: "", mensagem: "" });
-   // const autenticacao = localStorage.getItem('NODECRUDSEG/autenticacao');
+    // const autenticacao = localStorage.getItem('NODECRUDSEG/autenticacao');
+    const [autenticado, setAutenticado] = useState(false);
 
     const acaoLogin = async e => {
 
         e.preventDefault();
 
-            try {
-                const body = {
-                    nomeusuario: nomeusuario,
-                    senha: senha
-                };
-                await fetch(config.enderecoapi + '/api/login', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
-                }).then(response => response.json())
-                    .then(json => {
-                        //console.log("JSON retorno: " + "status: " + json.status + " Message: " + json.message)                    
-                        setAlerta({ status: "success", mensagem: JSON.stringify(json) })
-                        if (json.auth === true){
-                           // localStorage.setItem('NODECRUDSEG/autenticacao',JSON.stringify(json));
-                           gravaAutenticacao(json);
-                        }
-                    });
-            } catch (err) {
-                console.error(err.message);
-            }
+        try {
+            const body = {
+                nomeusuario: nomeusuario,
+                senha: senha
+            };
+            await fetch(config.enderecoapi + '/api/login', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            }).then(response => response.json())
+                .then(json => {
+                    //console.log("JSON retorno: " + "status: " + json.status + " Message: " + json.message)                    
+                    setAlerta({ status: "success", mensagem: JSON.stringify(json) })
+                    if (json.auth === true) {
+                        // localStorage.setItem('NODECRUDSEG/autenticacao',JSON.stringify(json));
+                        setAutenticado(true);
+                        gravaAutenticacao(json);
+                    }
+                });
+        } catch (err) {
+            console.error(err.message);
+        }
 
-            const autenticacao = pegaAutenticacao();
-            console.log(autenticacao);
-            console.log("token: "+ autenticacao.token);
-            console.log("decoded: " + JSON.stringify(jwt_decode(autenticacao.token)));
-        
-     
+        const autenticacao = pegaAutenticacao();
+        console.log(autenticacao);
+        console.log("token: " + autenticacao.token);
+        console.log("decoded: " + JSON.stringify(jwt_decode(autenticacao.token)));
+
+
     };
+
+    useEffect(() => {
+        const autenticacao = pegaAutenticacao();
+        console.log("autenticação no use efect: " + JSON.stringify(autenticacao));
+        if (autenticacao != null){
+            console.log("autenticação não é null");
+       if (autenticacao.auth === true) {
+                setAutenticado(true);
+             }            
+        }
+ 
+     
+    }, []);
+
+    if (autenticado === true) {
+        return <Redirect  push  to="/" />
+    }
 
     return (
         <div>
@@ -71,7 +93,7 @@ function Login() {
                                 onChange={e => setSenha(e.target.value)} />
                             <label for="floatingPassword">Senha</label>
                         </div>
-                        <button className="w-100 btn btn-lg btn-primary" type="submit">Efetuar login</button>                        
+                        <button className="w-100 btn btn-lg btn-primary" type="submit">Efetuar login</button>
                     </form>
                 </main>
             </body>
